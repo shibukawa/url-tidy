@@ -1,5 +1,10 @@
 # url-tidy: URL formatting utility
 
+[![npm version](https://badge.fury.io/js/url-tidy.svg)](https://badge.fury.io/js/url-tidy)
+[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+
+* [日本語](https://github.com/shibukawa/url-tidy/blob/main/README.ja.md)
+
 url-tidy is a Safe URL formatting library for TypeScript to avoid URL injection.
 
 This library provides a tagged template literal function that is short and easy to read API and escapes safely the values in the URL template to prevent URL injection.
