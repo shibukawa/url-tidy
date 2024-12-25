@@ -1,6 +1,6 @@
 {
     "name": "url-tidy",
-    "version": "0.5.1",
+    "version": "0.5.2",
     "type": "module",
     "files": [
         "dist",
@@ -41,5 +41,9 @@
         "tsup": "^8.3.5",
         "typescript": "~5.7.2",
         "vitest": "^2.1.8"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/shibukawa/url-tidy"
     }
 }

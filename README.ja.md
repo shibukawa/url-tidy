@@ -1,5 +1,10 @@
 # url-tidy: URLフォーマットユーティリティ
 
+[![npm version](https://badge.fury.io/js/url-tidy.svg)](https://badge.fury.io/js/url-tidy)
+[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+
+* [English](https://github.com/shibukawa/url-tidy/blob/main/README.md)
+
 url-tidy は TypeScript 用の URL インジェクションを防ぐための安全な URL 構築ライブラリです。
 
 このライブラリはタグ付きテンプレートリテラル関数として、短く読みやすいAPIを提供します。URL文字列のテンプレートに設定された文字列は適切にエスケープされます。
