@@ -19,7 +19,7 @@ import { url } from 'url-tidy';
 
 const id = 1000;
 
-const res = fetch(url`https://example.com/api/users/${'id'}/profile`)
+const res = fetch(url`https://example.com/api/users/${id}/profile`)
 // => fetch('https://example.com/api/users/1000/profile')
 ```
 
