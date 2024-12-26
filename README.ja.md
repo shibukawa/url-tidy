@@ -122,7 +122,7 @@ const apiUrl = customFormatter({
 
 const id = 1000;
 
-apiUrl`https://api-server/api/users/${'id'}/profile`
+apiUrl`https://api-server/api/users/${id}/profile`
 // => 'https://user:pAssw0rd@localhost:8080/api/users/1000/profile'
 // "https://api-server" はダミーの文字列で、customFormatter()のホスト名オプションで置き換わる
 // プロジェクトコードに実際のホスト名をハードコードすることを避けることができます。

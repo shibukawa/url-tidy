@@ -34,28 +34,42 @@ export type parseResult = {
     password?: string;
 };
 
+type StepType =
+    | "protocol"
+    | "hostname"
+    | "port"
+    | "path"
+    | "queryKey"
+    | "queryValue"
+    | "querySet"
+    | "fragment"
+    | "invalid";
+
+const invalidSeparator: Record<StepType, Record<string, boolean>> = {
+    protocol: { "://": true, ":": true, "?": true, "=": true, "&": true, "#": true, "@": true },
+    hostname: { "://": true, "//": true, "&": true, "=": true, "@": true },
+    port: {},
+    path: { "://": true, "//": true, ":": true, "=": true, "&": true, "@": true },
+    queryKey: { "://": true, "//": true, ":": true, "?": true, "@": true },
+    queryValue: { "://": true, "//": true, ":": true, "?": true, "=": true, "@": true },
+    querySet: { "&": true, "#": true },
+    fragment: {},
+    invalid: {},
+};
+
 export function parse(texts: TemplateStringsArray, ..._values: valueType[]): parseResult {
     const result: parseResult = {
         paths: [],
         queries: [],
     };
 
-    let step:
-        | "protocol"
-        | "hostname"
-        | "port"
-        | "path"
-        | "query-key"
-        | "query-value"
-        | "query-set"
-        | "fragment"
-        | "invalid" = "protocol";
+    let step: StepType = "protocol";
 
     let queryKey = "";
 
     const fragments = Array.from(texts);
     let currentIndex = 0;
-    let tokens = fragments[0].split(/((?::\/\/)|(?:\/\/)|[:/?&=#])/g);
+    let tokens = fragments[0].split(/((?::\/\/)|(?:\/\/)|[:/?&=#@])/g);
     if (tokens[0] === "") {
         tokens.shift();
     }
@@ -66,29 +80,30 @@ export function parse(texts: TemplateStringsArray, ..._values: valueType[]): par
             switch (step) {
                 case "protocol": {
                     const [protocol, separator, ...rest] = tokens;
-                    if (protocol && separator === "://") {
+                    if (separator === "://") {
+                        if (protocol === "") {
+                            throw new Error("protocol name should not be empty");
+                        }
                         result.protocol = {
                             type: "static",
                             value: protocol,
                         };
                         step = "hostname";
                         tokens = rest;
-                    } else if (protocol === "//") {
-                        // Scheme relative URL
-                        step = "hostname";
-                        tokens.shift();
-                    } else if (
-                        protocol === ":" ||
-                        protocol === "?" ||
-                        protocol === "&" ||
-                        protocol === "=" ||
-                        protocol === "#"
-                    ) {
-                        throw new Error(
-                            `url should be start with: schema, schema relative or path string, but ${protocol}`,
-                        );
                     } else {
-                        step = "path";
+                        if (invalidSeparator.protocol[protocol]) {
+                            throw new Error(
+                                `invalid character: '${protocol}'. only protocol name or //, / are available`,
+                            );
+                        }
+                        if (protocol === "//") {
+                            // Scheme relative URL
+                            step = "hostname";
+                            tokens.shift();
+                        } else {
+                            // slash or path name
+                            step = "path";
+                        }
                     }
                     break;
                 }
@@ -98,6 +113,11 @@ export function parse(texts: TemplateStringsArray, ..._values: valueType[]): par
                         break;
                     }
                     const [hostname, portSeparator, ...rest] = tokens;
+                    if (invalidSeparator.hostname[portSeparator]) {
+                        throw new Error(
+                            `invalid character after hostname: '${portSeparator}'. only :, /, ?, # are available`,
+                        );
+                    }
                     result.hostname = { type: "static", value: hostname };
                     if (portSeparator === ":") {
                         step = "port";
@@ -125,82 +145,111 @@ export function parse(texts: TemplateStringsArray, ..._values: valueType[]): par
                 }
                 case "path": {
                     const [separator, path, ...rest] = tokens;
-                    if (separator === "/") {
-                        let pathString = separator;
-                        if (path === "?") {
-                            step = "query-key";
-                        } else if (path === "#") {
+                    switch (separator) {
+                        case "/": {
+                            if (invalidSeparator.path[rest[0]]) {
+                                throw new Error(
+                                    `invalid character after path separator '/'. only path string, '?', '#' are available but ${path}`,
+                                );
+                            }
+                            let pathString = separator;
+                            if (path === "?") {
+                                step = "queryKey";
+                            } else if (path === "#") {
+                                step = "fragment";
+                            } else {
+                                pathString = separator + path;
+                            }
+                            const lastPath = result.paths[result.paths.length - 1];
+                            if (lastPath && lastPath.type === "static") {
+                                lastPath.value += pathString;
+                            } else {
+                                result.paths.push({ type: "static", value: separator + path });
+                            }
+                            tokens = rest;
+                            break;
+                        }
+                        case "?":
+                            step = "queryKey";
+                            tokens.shift();
+                            break;
+                        case "#":
                             step = "fragment";
-                        } else if (path === "=" || path === "&" || path === "://" || path === "//" || path === ":") {
-                            throw new Error(
-                                `invalid character after path separator '/'. only path string, '?', '#' are available but ${path}`,
-                            );
-                        } else {
-                            pathString = separator + path;
-                        }
-                        const lastPath = result.paths[result.paths.length - 1];
-                        if (lastPath && lastPath.type === "static") {
-                            lastPath.value += pathString;
-                        } else {
-                            result.paths.push({ type: "static", value: separator + path });
-                        }
-                        tokens = rest;
-                    } else if (separator === "?") {
-                        step = "query-key";
-                        tokens.shift();
-                    } else if (separator === "#") {
-                        step = "fragment";
-                        tokens.shift();
-                    } else {
-                        result.paths.push({ type: "static", value: separator });
-                        tokens.shift();
+                            tokens.shift();
+                            break;
+                        default:
+                            result.paths.push({ type: "static", value: separator });
+                            tokens.shift();
+                            break;
                     }
                     break;
                 }
-                case "query-key": {
+                case "queryKey": {
                     if (tokens[0] === "" && tokens.length === 1) {
                         tokens.shift();
-                        step = "query-set";
+                        step = "querySet";
                         break;
                     }
                     const [key, splitter, ...rest] = tokens;
-                    if (splitter === "=") {
-                        step = "query-value";
-                        queryKey = key;
-                        if (rest.length === 1 && rest[0] === "") {
-                            rest.shift();
-                        }
-                        tokens = rest;
-                    } else if (splitter === "&") {
-                        step = "query-value";
-                        result.queries.push({ key, value: { type: "static", value: "" } });
-                        tokens = rest;
-                    } else if (splitter === "#") {
-                        step = "fragment";
-                        result.queries.push({ key, value: { type: "static", value: "" } });
-                        queryKey = key;
-                        tokens = rest;
-                    } else {
-                        result.queries.push({ key, value: { type: "static", value: "" } });
-                        tokens = [];
-                        step = "invalid";
+                    if (invalidSeparator.queryKey[splitter]) {
+                        throw new Error(
+                            `invalid character after query key '${key}'. only =, &, # are available but '${splitter}`,
+                        );
+                    }
+                    switch (splitter) {
+                        case "=":
+                            if (key === "") {
+                                throw new Error("query key should not be empty");
+                            }
+                            step = "queryValue";
+                            queryKey = key;
+                            if (rest.length === 1 && rest[0] === "") {
+                                rest.shift();
+                            }
+                            tokens = rest;
+                            break;
+                        case "&":
+                            step = "queryValue";
+                            result.queries.push({ key, value: { type: "static", value: "" } });
+                            tokens = rest;
+                            break;
+                        case "#":
+                            step = "fragment";
+                            result.queries.push({ key, value: { type: "static", value: "" } });
+                            queryKey = key;
+                            tokens = rest;
+                            break;
+                        default:
+                            result.queries.push({ key, value: { type: "static", value: "" } });
+                            tokens = [];
+                            step = "invalid";
+                            break;
                     }
                     break;
                 }
-                case "query-value": {
+                case "queryValue": {
                     const [value, splitter, ...rest] = tokens;
-                    if (splitter === "&") {
-                        step = "query-key";
-                        result.queries.push({ key: queryKey, value: { type: "static", value } });
-                        tokens = rest;
-                    } else if (splitter === "#") {
-                        step = "fragment";
-                        result.queries.push({ key: queryKey, value: { type: "static", value } });
-                        tokens = rest;
-                    } else {
-                        result.queries.push({ key: queryKey, value: { type: "static", value } });
-                        tokens = [];
-                        step = "invalid";
+                    if (invalidSeparator.queryValue[splitter]) {
+                        throw new Error(
+                            `invalid character after query value of '${queryKey}'. only &, # are available but '${splitter}`,
+                        );
+                    }
+                    switch (splitter) {
+                        case "&":
+                            step = "queryKey";
+                            result.queries.push({ key: queryKey, value: { type: "static", value } });
+                            tokens = rest;
+                            break;
+                        case "#":
+                            step = "fragment";
+                            result.queries.push({ key: queryKey, value: { type: "static", value } });
+                            tokens = rest;
+                            break;
+                        default:
+                            result.queries.push({ key: queryKey, value: { type: "static", value } });
+                            tokens = [];
+                            step = "invalid";
+                            break;
                     }
                     break;
                 }
@@ -238,18 +287,30 @@ export function parse(texts: TemplateStringsArray, ..._values: valueType[]): par
                     };
                     step = "hostname";
                     tokens.shift();
-                } else if (tokens[0] === "/") {
-                    step = "path";
+                } else {
+                    throw new Error(`protocol must end with '://', but ${tokens[0]}`);
                 }
                 break;
             case "hostname":
-                if (tokens[0] === ":") {
-                    step = "port";
-                    tokens.shift();
-                } else if (tokens[0] === "/") {
-                    step = "path";
-                } else if (tokens[0] && currentIndex !== fragments.length - 1) {
+                if (invalidSeparator.hostname[tokens[0]]) {
                     throw new Error(`hostname must end with ':' or '/', but ${tokens[0]}`);
+                }
+                switch (tokens[0]) {
+                    case ":":
+                        step = "port";
+                        tokens.shift();
+                        break;
+                    case "/":
+                        step = "path";
+                        break;
+                    case "?":
+                        step = "queryKey";
+                        tokens.shift();
+                        break;
+                    case "#":
+                        step = "fragment";
+                        tokens.shift();
+                        break;
                 }
                 result.hostname = {
                     type: "param",
@@ -280,11 +341,11 @@ export function parse(texts: TemplateStringsArray, ..._values: valueType[]): par
                     index: currentIndex - 1,
                 });
                 break;
-            case "query-key":
+            case "queryKey":
                 break;
-            case "query-value":
+            case "queryValue":
                 if (tokens[0] === "&") {
-                    step = "query-key";
+                    step = "queryKey";
                     tokens.shift();
                 } else if (tokens[0] === "#") {
                     step = "fragment";
@@ -300,9 +361,9 @@ export function parse(texts: TemplateStringsArray, ..._values: valueType[]): par
                     },
                 });
                 break;
-            case "query-set":
+            case "querySet":
                 if (tokens[0] === "&") {
-                    step = "query-key";
+                    step = "queryKey";
                     tokens.shift();
                 } else if (tokens[0] === "#") {
                     step = "fragment";

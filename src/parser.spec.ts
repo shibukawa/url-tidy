@@ -64,6 +64,30 @@ describe("valid cases", () => {
             },
         },
         {
+            name: "no param: protocol, hostname, query",
+            actual: parse`http://example.com?query1=value1&query2=value2`,
+            expected: {
+                protocol: { type: "static", value: "http" },
+                hostname: { type: "static", value: "example.com" },
+                paths: [],
+                queries: [
+                    { key: "query1", value: { type: "static", value: "value1" } },
+                    { key: "query2", value: { type: "static", value: "value2" } },
+                ],
+            },
+        },
+        {
+            name: "no param: protocol, hostname, hash",
+            actual: parse`http://example.com#test`,
+            expected: {
+                protocol: { type: "static", value: "http" },
+                hostname: { type: "static", value: "example.com" },
+                paths: [],
+                queries: [],
+                fragment: { type: "static", value: "test" },
+            },
+        },
+        {
             name: "no param: protocol, hostname, port, path",
             actual: parse`http://example.com:8080/path/to/resource`,
             expected: {
@@ -113,6 +137,20 @@ describe("valid cases", () => {
                     { key: "query2", value: { type: "static", value: "value2" } },
                 ],
                 fragment: { type: "static", value: "test" },
+            },
+        },
+        {
+            name: "no param: protocol, hostname, port, query",
+            actual: parse`http://example.com:8080?query1=value1&query2=value2`,
+            expected: {
+                protocol: { type: "static", value: "http" },
+                hostname: { type: "static", value: "example.com" },
+                port: { type: "static", value: 8080 },
+                paths: [],
+                queries: [
+                    { key: "query1", value: { type: "static", value: "value1" } },
+                    { key: "query2", value: { type: "static", value: "value2" } },
+                ],
             },
         },
         {
@@ -284,6 +322,25 @@ describe("valid cases", () => {
             },
         },
         {
+            name: "param: [hostname], query",
+            actual: parse`//${"example.com"}?query=value`,
+            expected: {
+                hostname: { type: "param", index: 0 },
+                paths: [],
+                queries: [{ key: "query", value: { type: "static", value: "value" } }],
+            },
+        },
+        /*{
+            name: "param: hostname, [port], query",
+            actual: parse`//example.com:${8080}?query=value`,
+            expected: {
+                hostname: { type: "param", index: 0 },
+                port: { type: "param", index: 1 },
+                paths: [],
+                queries: [{ key: "query", value: { type: "static", value: "value" } }],
+            },
+        },*/
+        {
             name: "param: hostname, path, [query], query, [query]",
             actual: parse`//example.com/path?query=${"value"}&query2=value&query3=${"value"}`,
             expected: {
@@ -315,6 +372,16 @@ describe("valid cases", () => {
                 hostname: { type: "static", value: "example.com" },
                 paths: [{ type: "static", value: "/path" }],
                 queries: [{ key: "", value: { type: "param", index: 0 } }],
+            },
+        },
+        {
+            name: "param: [hostname], fragment",
+            actual: parse`//${"example.com"}#test`,
+            expected: {
+                hostname: { type: "param", index: 0 },
+                paths: [],
+                queries: [],
+                fragment: { type: "static", value: "test" },
             },
         },
         {
