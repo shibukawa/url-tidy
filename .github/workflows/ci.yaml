@@ -9,7 +9,7 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             - name: Checkout code
-              uses: actions/checkout@v3
+              uses: actions/checkout@v4
             - name: Setup Node.js
               uses: actions/setup-node@v3
               with:
@@ -20,13 +20,7 @@ jobs:
               run: npm test
 
     test-deno:
-        name: Deploy
         runs-on: ubuntu-latest
-
-        permissions:
-        id-token: write # Needed for auth with Deno Deploy
-        contents: read # Needed to clone the repository
-
         steps:
             - name: Clone repository
               uses: actions/checkout@v4
@@ -34,14 +28,14 @@ jobs:
               uses: denoland/setup-deno@v2
               with:
                 deno-version: v2.x
-         - name: Run tests
-            run: "deno task test"
+             - name: Run tests
+                run: "deno task test"
 
     test-bun:
         runs-on: ubuntu-latest
         steps:
             - name: Checkout
-              uses: actions/checkout@v3
+              uses: actions/checkout@v4
             - name: Setup Bun
               uses: oven-sh/setup-bun@v2
                 with: latest
