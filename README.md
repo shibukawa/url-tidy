@@ -124,7 +124,7 @@ const url = customFormatter({
 
 const id = 1000;
 
-url`https://api-server/api/users/${'id'}/profile`
+url`https://api-server/api/users/${id}/profile`
 // => 'https://user:pAssw0rd@localhost:8080/api/users/1000/profile'
 // "https://api-server" is a dummy string that is replaced with customFormatter()'s hostname option.
 // You can avoid hard-coding the actual hostname in your project code.

@@ -24,7 +24,7 @@ describe("formatter", () => {
         },
         {
             name: "protocol-relative URL (dynamic)",
-            actual: url`${null}//bucket.example.com/file/path`,
+            actual: url`${null}://bucket.example.com/file/path`,
             expected: "//bucket.example.com/file/path",
         },
         {
