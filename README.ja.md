@@ -2,6 +2,9 @@
 
 [![npm version](https://badge.fury.io/js/url-tidy.svg)](https://badge.fury.io/js/url-tidy)
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+![NodeJS](https://img.shields.io/badge/node.js-6DA55F?style=for-the-badge&logo=node.js&logoColor=white)
+![Deno JS](https://img.shields.io/badge/deno%20js-000000?style=for-the-badge&logo=deno&logoColor=white)
+![Bun](https://img.shields.io/badge/Bun-%23000000.svg?style=for-the-badge&logo=bun&logoColor=white)
 
 * [English](https://github.com/shibukawa/url-tidy/blob/main/README.md)
 
