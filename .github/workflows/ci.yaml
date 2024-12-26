@@ -29,7 +29,7 @@ jobs:
               with:
                 deno-version: v2.x
             - name: Run tests
-                run: "deno task test"
+              run: "deno task test"
 
     test-bun:
         runs-on: ubuntu-latest
