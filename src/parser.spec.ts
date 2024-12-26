@@ -5,12 +5,12 @@ import type { overwriteOption, parseResult } from "./parser";
 describe("valid cases", () => {
     const cases: {
         name: string;
-        actual: parseResult;
+        actual: () => parseResult;
         expected: parseResult;
     }[] = [
         {
             name: "no param: protocol, hostname",
-            actual: parse`http://example.com`,
+            actual: () => parse`http://example.com`,
             expected: {
                 protocol: { type: "static", value: "http" },
                 hostname: { type: "static", value: "example.com" },
@@ -20,7 +20,7 @@ describe("valid cases", () => {
         },
         {
             name: "no param: protocol relative, hostname",
-            actual: parse`//example.com`,
+            actual: () => parse`//example.com`,
             expected: {
                 hostname: { type: "static", value: "example.com" },
                 paths: [],
@@ -29,7 +29,7 @@ describe("valid cases", () => {
         },
         {
             name: "no param: hostname, port",
-            actual: parse`//example.com:8080`,
+            actual: () => parse`//example.com:8080`,
             expected: {
                 hostname: { type: "static", value: "example.com" },
                 port: { type: "static", value: 8080 },
@@ -39,7 +39,7 @@ describe("valid cases", () => {
         },
         {
             name: "no param: protocol, hostname, path",
-            actual: parse`http://example.com/path/to/resource`,
+            actual: () => parse`http://example.com/path/to/resource`,
             expected: {
                 protocol: { type: "static", value: "http" },
                 hostname: { type: "static", value: "example.com" },
@@ -49,7 +49,7 @@ describe("valid cases", () => {
         },
         {
             name: "no param: abs path",
-            actual: parse`/path/to/resource`,
+            actual: () => parse`/path/to/resource`,
             expected: {
                 paths: [{ type: "static", value: "/path/to/resource" }],
                 queries: [],
@@ -57,7 +57,7 @@ describe("valid cases", () => {
         },
         {
             name: "no param: rel path",
-            actual: parse`./path/to/resource`,
+            actual: () => parse`./path/to/resource`,
             expected: {
                 paths: [{ type: "static", value: "./path/to/resource" }],
                 queries: [],
@@ -65,7 +65,7 @@ describe("valid cases", () => {
         },
         {
             name: "no param: protocol, hostname, query",
-            actual: parse`http://example.com?query1=value1&query2=value2`,
+            actual: () => parse`http://example.com?query1=value1&query2=value2`,
             expected: {
                 protocol: { type: "static", value: "http" },
                 hostname: { type: "static", value: "example.com" },
@@ -78,7 +78,7 @@ describe("valid cases", () => {
         },
         {
             name: "no param: protocol, hostname, hash",
-            actual: parse`http://example.com#test`,
+            actual: () => parse`http://example.com#test`,
             expected: {
                 protocol: { type: "static", value: "http" },
                 hostname: { type: "static", value: "example.com" },
@@ -89,7 +89,7 @@ describe("valid cases", () => {
         },
         {
             name: "no param: protocol, hostname, port, path",
-            actual: parse`http://example.com:8080/path/to/resource`,
+            actual: () => parse`http://example.com:8080/path/to/resource`,
             expected: {
                 protocol: { type: "static", value: "http" },
                 hostname: { type: "static", value: "example.com" },
@@ -100,7 +100,7 @@ describe("valid cases", () => {
         },
         {
             name: "no param: protocol, hostname, port, path, query",
-            actual: parse`http://example.com:8080/path/to/resource?query1=value1&query2=value2`,
+            actual: () => parse`http://example.com:8080/path/to/resource?query1=value1&query2=value2`,
             expected: {
                 protocol: { type: "static", value: "http" },
                 hostname: { type: "static", value: "example.com" },
@@ -114,7 +114,7 @@ describe("valid cases", () => {
         },
         {
             name: "no param: protocol, hostname, port, path, fragment",
-            actual: parse`http://example.com:8080/path/to/resource#test`,
+            actual: () => parse`http://example.com:8080/path/to/resource#test`,
             expected: {
                 protocol: { type: "static", value: "http" },
                 hostname: { type: "static", value: "example.com" },
@@ -126,7 +126,7 @@ describe("valid cases", () => {
         },
         {
             name: "no param: protocol, hostname, port, path, query, fragment",
-            actual: parse`http://example.com:8080/path/to/resource?query1=value1&query2=value2#test`,
+            actual: () => parse`http://example.com:8080/path/to/resource?query1=value1&query2=value2#test`,
             expected: {
                 protocol: { type: "static", value: "http" },
                 hostname: { type: "static", value: "example.com" },
@@ -141,7 +141,7 @@ describe("valid cases", () => {
         },
         {
             name: "no param: protocol, hostname, port, query",
-            actual: parse`http://example.com:8080?query1=value1&query2=value2`,
+            actual: () => parse`http://example.com:8080?query1=value1&query2=value2`,
             expected: {
                 protocol: { type: "static", value: "http" },
                 hostname: { type: "static", value: "example.com" },
@@ -155,7 +155,7 @@ describe("valid cases", () => {
         },
         {
             name: "param: [protocol], hostname",
-            actual: parse`${"https"}://example.com`,
+            actual: () => parse`${"https"}://example.com`,
             expected: {
                 protocol: { type: "param", index: 0 },
                 hostname: { type: "static", value: "example.com" },
@@ -165,7 +165,7 @@ describe("valid cases", () => {
         },
         {
             name: "param: protocol, [hostname]",
-            actual: parse`http://${"example.com"}`,
+            actual: () => parse`http://${"example.com"}`,
             expected: {
                 protocol: { type: "static", value: "http" },
                 hostname: { type: "param", index: 0 },
@@ -175,7 +175,7 @@ describe("valid cases", () => {
         },
         {
             name: "param: [protocol], [hostname]",
-            actual: parse`${"https"}://${"example.com"}`,
+            actual: () => parse`${"https"}://${"example.com"}`,
             expected: {
                 protocol: { type: "param", index: 0 },
                 hostname: { type: "param", index: 1 },
@@ -185,7 +185,7 @@ describe("valid cases", () => {
         },
         {
             name: "param: [protocol], [hostname], path",
-            actual: parse`${"https"}://${"example.com"}/path/to/resource`,
+            actual: () => parse`${"https"}://${"example.com"}/path/to/resource`,
             expected: {
                 protocol: { type: "param", index: 0 },
                 hostname: { type: "param", index: 1 },
@@ -195,7 +195,7 @@ describe("valid cases", () => {
         },
         {
             name: "param: protocol hostname, [port]",
-            actual: parse`https://example.com:${8080}`,
+            actual: () => parse`https://example.com:${8080}`,
             expected: {
                 protocol: { type: "static", value: "https" },
                 hostname: { type: "static", value: "example.com" },
@@ -206,7 +206,7 @@ describe("valid cases", () => {
         },
         {
             name: "param: hostname, [port]",
-            actual: parse`//example.com:${8080}`,
+            actual: () => parse`//example.com:${8080}`,
             expected: {
                 hostname: { type: "static", value: "example.com" },
                 port: { type: "param", index: 0 },
@@ -216,7 +216,7 @@ describe("valid cases", () => {
         },
         {
             name: "param: [hostname], [port]",
-            actual: parse`//${"example.com"}:${8080}`,
+            actual: () => parse`//${"example.com"}:${8080}`,
             expected: {
                 hostname: { type: "param", index: 0 },
                 port: { type: "param", index: 1 },
@@ -226,7 +226,7 @@ describe("valid cases", () => {
         },
         {
             name: "param: [protocol], [hostname], [path]",
-            actual: parse`${"https"}://${"example.com"}/${"path"}`,
+            actual: () => parse`${"https"}://${"example.com"}/${"path"}`,
             expected: {
                 protocol: { type: "param", index: 0 },
                 hostname: { type: "param", index: 1 },
@@ -239,7 +239,7 @@ describe("valid cases", () => {
         },
         {
             name: "param: [protocol], [hostname], path1, [path2]",
-            actual: parse`${"https"}://${"example.com"}/parent/${"path"}`,
+            actual: () => parse`${"https"}://${"example.com"}/parent/${"path"}`,
             expected: {
                 protocol: { type: "param", index: 0 },
                 hostname: { type: "param", index: 1 },
@@ -252,7 +252,7 @@ describe("valid cases", () => {
         },
         {
             name: "param: [protocol], [hostname], path1, [path2], path3",
-            actual: parse`${"https"}://${"example.com"}/parent/${"path"}/child`,
+            actual: () => parse`${"https"}://${"example.com"}/parent/${"path"}/child`,
             expected: {
                 protocol: { type: "param", index: 0 },
                 hostname: { type: "param", index: 1 },
@@ -266,7 +266,7 @@ describe("valid cases", () => {
         },
         {
             name: "param: hostname, port, [path]",
-            actual: parse`//example.com:8000/${"path"}`,
+            actual: () => parse`//example.com:8000/${"path"}`,
             expected: {
                 hostname: { type: "static", value: "example.com" },
                 port: { type: "static", value: 8000 },
@@ -279,7 +279,7 @@ describe("valid cases", () => {
         },
         {
             name: "param: hostname, [port], path",
-            actual: parse`//example.com:${8080}/path/to/resource`,
+            actual: () => parse`//example.com:${8080}/path/to/resource`,
             expected: {
                 hostname: { type: "static", value: "example.com" },
                 port: { type: "param", index: 0 },
@@ -289,7 +289,7 @@ describe("valid cases", () => {
         },
         {
             name: "param: hostname, [port], [path]",
-            actual: parse`//example.com:${8080}/${"path"}`,
+            actual: () => parse`//example.com:${8080}/${"path"}`,
             expected: {
                 hostname: { type: "static", value: "example.com" },
                 port: { type: "param", index: 0 },
@@ -302,7 +302,7 @@ describe("valid cases", () => {
         },
         {
             name: "param: hostname, [path]",
-            actual: parse`//example.com/${"path"}`,
+            actual: () => parse`//example.com/${"path"}`,
             expected: {
                 hostname: { type: "static", value: "example.com" },
                 paths: [
@@ -314,7 +314,7 @@ describe("valid cases", () => {
         },
         {
             name: "param: hostname, path, [query]",
-            actual: parse`//example.com/path?query=${"value"}`,
+            actual: () => parse`//example.com/path?query=${"value"}`,
             expected: {
                 hostname: { type: "static", value: "example.com" },
                 paths: [{ type: "static", value: "/path" }],
@@ -323,26 +323,26 @@ describe("valid cases", () => {
         },
         {
             name: "param: [hostname], query",
-            actual: parse`//${"example.com"}?query=value`,
+            actual: () => parse`//${"example.com"}?query=value`,
             expected: {
                 hostname: { type: "param", index: 0 },
                 paths: [],
                 queries: [{ key: "query", value: { type: "static", value: "value" } }],
             },
         },
-        /*{
+        {
             name: "param: hostname, [port], query",
-            actual: parse`//example.com:${8080}?query=value`,
+            actual: () => parse`//example.com:${8080}?query=value`,
             expected: {
-                hostname: { type: "param", index: 0 },
-                port: { type: "param", index: 1 },
+                hostname: { type: "static", value: "example.com" },
+                port: { type: "param", index: 0 },
                 paths: [],
                 queries: [{ key: "query", value: { type: "static", value: "value" } }],
             },
-        },*/
+        },
         {
             name: "param: hostname, path, [query], query, [query]",
-            actual: parse`//example.com/path?query=${"value"}&query2=value&query3=${"value"}`,
+            actual: () => parse`//example.com/path?query=${"value"}&query2=value&query3=${"value"}`,
             expected: {
                 hostname: { type: "static", value: "example.com" },
                 paths: [{ type: "static", value: "/path" }],
@@ -355,7 +355,7 @@ describe("valid cases", () => {
         },
         {
             name: "param: hostname, path, [query], [query]",
-            actual: parse`//example.com/path?query=${"value"}&query2=${"value"}`,
+            actual: () => parse`//example.com/path?query=${"value"}&query2=${"value"}`,
             expected: {
                 hostname: { type: "static", value: "example.com" },
                 paths: [{ type: "static", value: "/path" }],
@@ -367,7 +367,7 @@ describe("valid cases", () => {
         },
         {
             name: "param: hostname, path, [query-set]",
-            actual: parse`//example.com/path?${{ query: "value", query2: "value" }}`,
+            actual: () => parse`//example.com/path?${{ query: "value", query2: "value" }}`,
             expected: {
                 hostname: { type: "static", value: "example.com" },
                 paths: [{ type: "static", value: "/path" }],
@@ -376,7 +376,7 @@ describe("valid cases", () => {
         },
         {
             name: "param: [hostname], fragment",
-            actual: parse`//${"example.com"}#test`,
+            actual: () => parse`//${"example.com"}#test`,
             expected: {
                 hostname: { type: "param", index: 0 },
                 paths: [],
@@ -386,7 +386,7 @@ describe("valid cases", () => {
         },
         {
             name: "param: hostname, port, path, [fragment]",
-            actual: parse`//example.com:8000/path#${"fragment"}`,
+            actual: () => parse`//example.com:8000/path#${"fragment"}`,
             expected: {
                 hostname: { type: "static", value: "example.com" },
                 port: { type: "static", value: 8000 },
@@ -397,7 +397,7 @@ describe("valid cases", () => {
         },
         {
             name: "param: hostname, port, [path], fragment",
-            actual: parse`//example.com:8000/${"path"}#fragment`,
+            actual: () => parse`//example.com:8000/${"path"}#fragment`,
             expected: {
                 hostname: { type: "static", value: "example.com" },
                 port: { type: "static", value: 8000 },
@@ -411,7 +411,7 @@ describe("valid cases", () => {
         },
         {
             name: "param: hostname, port, [path], fragment",
-            actual: parse`//example.com:8000/${"path"}#fragment`,
+            actual: () => parse`//example.com:8000/${"path"}#fragment`,
             expected: {
                 hostname: { type: "static", value: "example.com" },
                 port: { type: "static", value: 8000 },
@@ -425,7 +425,7 @@ describe("valid cases", () => {
         },
         {
             name: "no param: protocol, hostname, path(encoded)",
-            actual: parse`http://example.com/🐙`,
+            actual: () => parse`http://example.com/🐙`,
             expected: {
                 protocol: { type: "static", value: "http" },
                 hostname: { type: "static", value: "example.com" },
@@ -436,7 +436,7 @@ describe("valid cases", () => {
     ];
     for (const { name, actual, expected } of cases) {
         test(name, () => {
-            expect(actual).toEqual(expected);
+            expect(actual()).toEqual(expected);
         });
     }
 });
@@ -445,13 +445,13 @@ describe("overwriting by options", () => {
     const cases: {
         name: string;
         config: overwriteOption;
-        src: parseResult;
+        src: () => parseResult;
         expected: parseResult;
     }[] = [
         {
             name: "overwrite: protocol",
             config: { protocol: "https" },
-            src: parse`http://example.com`,
+            src: () => parse`http://example.com`,
             expected: {
                 protocol: { type: "static", value: "https" },
                 hostname: { type: "static", value: "example.com" },
@@ -462,7 +462,7 @@ describe("overwriting by options", () => {
         {
             name: "overwrite: hostname",
             config: { hostname: "api.example.com" },
-            src: parse`http://example.com`,
+            src: () => parse`http://example.com`,
             expected: {
                 protocol: { type: "static", value: "http" },
                 hostname: { type: "static", value: "api.example.com" },
@@ -473,7 +473,7 @@ describe("overwriting by options", () => {
         {
             name: "overwrite: port",
             config: { port: 8080 },
-            src: parse`http://example.com`,
+            src: () => parse`http://example.com`,
             expected: {
                 protocol: { type: "static", value: "http" },
                 hostname: { type: "static", value: "example.com" },
@@ -485,7 +485,7 @@ describe("overwriting by options", () => {
         {
             name: "overwrite: host and port",
             config: { hostname: "api.example.com:8080" },
-            src: parse`http://example.com`,
+            src: () => parse`http://example.com`,
             expected: {
                 protocol: { type: "static", value: "http" },
                 hostname: { type: "static", value: "api.example.com" },
@@ -497,7 +497,7 @@ describe("overwriting by options", () => {
         {
             name: "overwrite: protocol and host and porty",
             config: { hostname: "https://api.example.com:8080" },
-            src: parse`http://example.com`,
+            src: () => parse`http://example.com`,
             expected: {
                 protocol: { type: "static", value: "https" },
                 hostname: { type: "static", value: "api.example.com" },
@@ -509,7 +509,7 @@ describe("overwriting by options", () => {
         {
             name: "overwrite: basic auth credentials",
             config: { username: "admin-user", password: "pAssw0rd" },
-            src: parse`http://example.com`,
+            src: () => parse`http://example.com`,
             expected: {
                 protocol: { type: "static", value: "http" },
                 hostname: { type: "static", value: "example.com" },
@@ -522,7 +522,7 @@ describe("overwriting by options", () => {
     ];
     for (const { name, config, src, expected } of cases) {
         test(name, () => {
-            expect(overwrite(src, config)).toEqual(expected);
+            expect(overwrite(src(), config)).toEqual(expected);
         });
     }
 });
