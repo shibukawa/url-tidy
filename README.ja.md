@@ -14,20 +14,38 @@ url-tidy は TypeScript 用の URL インジェクションを防ぐための安
 
 安全なURLを生成する`URL`クラスのラッパーですが、ワンライナーで使いやすいAPIを提供するとともに、`URL`クラスがサポートしていないスキーマ相対URLや、ホスト名のない相対パスなどもサポートしています。
 
+このパッケージはNode.js、Deno、Bunをサポートしています。
+
 ## インストール
 
+Node.jsを使う場合は、お好きなパッケージマネージャでパッケージをインストールしてください。Bunもサポートしています。
+
 ```bash
+# Node.jsではお好きなパッケージマネージャを使ってください
 $ npm install url-tidy
+
+# Bun
+$ bun install url-tidy
 ```
 
 ## 基本の利用方法
+
+Node.jsやBunの場合のインポートパスは以下の通りです。
+
+```ts
+import { url } from 'url-tidy';
+```
+
+Denoを使っている場合はインポートパスに`npm:`プレフィックスが必要です。
+
+```ts
+import { url } from 'npm:url-tidy';
+```
 
 url-tidyはタグ付きテンプレートリテラルの関数を提供します。この関数はフォーマットされたURL文字列を返します。
 そのまま`fetch()`関数に渡せます
 
 ```ts
-import { url } from 'url-tidy';
-
 const id = 1000;
 
 const res = fetch(url`https://example.com/api/users/${id}/profile`)
