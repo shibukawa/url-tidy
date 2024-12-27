@@ -12,13 +12,33 @@ url-tidy is a Safe URL formatting library for TypeScript to avoid URL injection.
 
 This library provides a tagged template literal function that is short and easy to read API and escapes safely the values in the URL template to prevent URL injection.
 
+This package supports Node.js and Deno and Bun.
+
 ## Installation
 
+If you use Node.js, install the package with your favorite package manager. Bun is also supported.
+
 ```bash
+# Node.js use your favorite package manager
 $ npm install url-tidy
+
+# Bun
+$ bun install url-tidy
 ```
 
 ## Basic Usage
+
+Import path for Node.js or Bun is as follows:
+
+```ts
+import { url } from 'url-tidy';
+```
+
+If you use Deno, import path requires `npm:` prefix.
+
+```ts
+import { url } from 'npm:url-tidy';
+```
 
 url-tidy provides tagged template literal function and it returns formatted URL string.
 
