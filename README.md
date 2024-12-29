@@ -8,9 +8,9 @@
 
 * [日本語](https://github.com/shibukawa/url-tidy/blob/main/README.ja.md)
 
-url-tidy is a Safe URL formatting library for TypeScript to avoid URL injection.
+url-tidy is a Safe URL formatting library for TypeScript. This library provides a tagged template literal function that is short and easy to read API and escapes safely the values in the URL template to prevent URL injection.
 
-This library provides a tagged template literal function that is short and easy to read API and escapes safely the values in the URL template to prevent URL injection.
+It is a wrapper of `URL` class to generate safe URLs, but it provides an easy-to-use API in one line and supports schema-relative URLs and relative paths without hostnames that are not supported by the `URL` class.
 
 This package supports Node.js and Deno and Bun.
 
@@ -153,3 +153,7 @@ url`https://api-server/api/users/${id}/profile`
 ## License
 
 Apache-2.0
+
+## Reference
+
+* Go Version: [github.com/shibukawa/urlf](https://pkg.go.dev/github.com/shibukawa/urlf)

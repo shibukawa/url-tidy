@@ -106,13 +106,13 @@ export function customFormatter(opt: overwriteOption) {
                 }
             }
         }
-        for (const p of template.queries) {
-            if (p.value.type === "static") {
-                result.searchParams.append(p.key, p.value.value);
-            } else if (p.key) {
-                updateQuery(p.key, values[p.value.index] as queryItemType);
+        for (const q of template.queries) {
+            if (q.value.type === "static") {
+                result.searchParams.append(q.key, q.value.value);
+            } else if (q.key) {
+                updateQuery(q.key, values[q.value.index] as queryItemType);
             } else {
-                const obj = values[p.value.index];
+                const obj = values[q.value.index];
                 if (obj instanceof URLSearchParams) {
                     for (const key of obj.keys()) {
                         updateQuery(key, obj.getAll(key));
@@ -122,6 +122,7 @@ export function customFormatter(opt: overwriteOption) {
                         updateQuery(key, value);
                     }
                 }
+                // todo else throw error
             }
         }
         // Hash
