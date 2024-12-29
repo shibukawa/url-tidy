@@ -26,7 +26,6 @@ export type parseResult = {
     protocol?: part<string>;
     hostname?: part<string>;
     port?: part<number>;
-    hash?: part<string>;
     paths: part<string>[];
     queries: { key: string; value: part<string> }[];
     fragment?: part<string>;
@@ -38,7 +37,7 @@ type StepType = "protocol" | "hostname" | "port" | "path" | "query" | "queryKey"
 
 const invalidSeparator: Record<StepType, Record<string, boolean>> = {
     protocol: { "://": true, "//": false, ":": true, "/": false, "?": true, "=": true, "&": true, "#": true, "@": true },
-    hostname: { "://": true, "//": true, ":": false, "/": false, "?": false, "=": true, "&": true, "#": false, "@": true },
+    hostname: {},
     port: {},
     path: { "://": true, "//": true, ":": true, "/": false, "?": false, "=": true, "&": true, "#": false, "@": true },
     query: { "://": true, "//": true, ":": true, "/": true, "?": false, "=": true, "&": true, "#": false, "@": true },
@@ -186,7 +185,7 @@ export function parse(texts: TemplateStringsArray, ..._values: valueType[]): par
                         throw new Error(`invalid placeholder after ${lastToken}`);
                     case "static":
                         // if input is relative path like "./path/to/resource" or "path/to/resource", it is ok.
-                        if (result.protocol || result.hostname || result.port) {
+                        if (result.protocol || result.hostname) {
                             throw new Error(`invalid text after '${lastToken}': '${separator.str}'`);
                         }
                         appendPath(separator.str);
@@ -194,7 +193,7 @@ export function parse(texts: TemplateStringsArray, ..._values: valueType[]): par
                         break;
                     case "separator":
                         if (invalidSeparator.path[separator.str]) {
-                            throw new Error(`invalid character after ${lastToken}.  are available but ${path.type}`);
+                            throw new Error(`invalid character after ${lastToken}. / ? # are available but ${separator.type}`);
                         }
                         if (separator.str !== "/") {
                             step = "query";
@@ -238,12 +237,11 @@ export function parse(texts: TemplateStringsArray, ..._values: valueType[]): par
                         }
                         if (separator.str === "?") {
                             lastToken = "?";
-                            tokens.shift();
                             step = "queryKey";
                         } else if (separator.str === "#") {
-                            tokens.shift();
                             step = "fragment";
                         }
+                        tokens.shift();
                         break;
                     case "placeholder":
                         throw new Error(`invalid placeholder {${separator.index}} after ${lastToken}. It should be '?' or '#'`);
@@ -297,18 +295,15 @@ export function parse(texts: TemplateStringsArray, ..._values: valueType[]): par
                                     queryKey = key.str;
                                     lastToken = key.str;
                                     step = "queryValue";
-                                    tokens.splice(0, 2);
                                     break;
+                                // biome-ignore lint/suspicious/noFallthroughSwitchClause: <explanation>
+                                case "#":
+                                    step = "fragment";
                                 case "&":
                                     result.queries.push({ key: key.str, value: { type: "static", value: "" } });
-                                    tokens.splice(0, 2);
-                                    break;
-                                case "#":
-                                    result.queries.push({ key: key.str, value: { type: "static", value: "" } });
-                                    tokens.splice(0, 2);
-                                    step = "fragment";
                                     break;
                             }
+                            tokens.splice(0, 2);
                         }
                 }
                 break;
@@ -325,11 +320,10 @@ export function parse(texts: TemplateStringsArray, ..._values: valueType[]): par
                         result.queries.push({ key: queryKey, value: { type: "static", value: value.str } });
                         break;
                 }
-                tokens.shift();
                 if (splitter) {
                     switch (splitter.type) {
                         case "placeholder":
-                            throw new Error(`invalid placeholder after query value of '${queryKey}'`);
+                            throw new Error(`invalid placeholder ${splitter.index} after query value of '${queryKey}'`);
                         case "static":
                             throw new Error(`invalid text '${splitter.str}' after query value of '${queryKey}'`);
                         case "separator":
@@ -341,22 +335,20 @@ export function parse(texts: TemplateStringsArray, ..._values: valueType[]): par
                             switch (splitter.str) {
                                 case "&":
                                     step = "queryKey";
-                                    tokens.shift();
                                     break;
                                 case "#":
                                     step = "fragment";
-                                    tokens.shift();
                                     break;
                             }
+                            tokens.splice(0, 2);
                     }
+                } else {
+                    tokens.shift();
                 }
                 break;
             }
             case "fragment": {
                 const token = tokens[0];
-                if (!token) {
-                    break;
-                }
                 switch (token.type) {
                     case "separator":
                         throw new Error(
@@ -364,13 +356,12 @@ export function parse(texts: TemplateStringsArray, ..._values: valueType[]): par
                         );
                     case "static":
                         result.fragment = { type: "static", value: token.str };
-                        tokens.shift();
                         break;
                     case "placeholder":
                         result.fragment = { type: "param", index: token.index };
-                        tokens.shift();
                         break;
                 }
+                tokens.shift();
                 step = "invalid"; // this should be the last step
                 break;
             }

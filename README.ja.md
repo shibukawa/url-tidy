@@ -8,9 +8,7 @@
 
 * [English](https://github.com/shibukawa/url-tidy/blob/main/README.md)
 
-url-tidy は TypeScript 用の URL インジェクションを防ぐための安全な URL 構築ライブラリです。
-
-このライブラリはタグ付きテンプレートリテラル関数として、短く読みやすいAPIを提供します。URL文字列のテンプレートに設定された文字列は適切にエスケープされます。
+url-tidy は TypeScript 用の URL 構築ライブラリです。このライブラリはタグ付きテンプレートリテラル関数として、短く読みやすいAPIを提供します。URL文字列のテンプレートに設定された文字列は適切にエスケープされ、URLインジェクションを防ぎます。
 
 安全なURLを生成する`URL`クラスのラッパーですが、ワンライナーで使いやすいAPIを提供するとともに、`URL`クラスがサポートしていないスキーマ相対URLや、ホスト名のない相対パスなどもサポートしています。
 
@@ -152,3 +150,7 @@ apiUrl`https://api-server/api/users/${id}/profile`
 ## License
 
 Apache-2.0
+
+## Reference
+
+* Goバージョン: [github.com/shibukawa/urlf](https://pkg.go.dev/github.com/shibukawa/urlf)

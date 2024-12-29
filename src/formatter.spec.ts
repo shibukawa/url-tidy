@@ -63,11 +63,6 @@ describe("formatter", () => {
             expected: "http://api.example.com/users/1000/",
         },
         {
-            name: "path placeholder - number",
-            actual: () => url`http://api.example.com/users/${1000}/`,
-            expected: "http://api.example.com/users/1000/",
-        },
-        {
             name: "path placeholder - array",
             actual: () => url`http://api.example.com/users/${["a", "b", 1000]}/`,
             expected: "http://api.example.com/users/a/b/1000/",
@@ -76,6 +71,11 @@ describe("formatter", () => {
             name: "path placeholder - string with path separator",
             actual: () => url`http://api.example.com/users/${"a/b/1000"}/`,
             expected: "http://api.example.com/users/a/b/1000/",
+        },
+        {
+            name: "path placeholder - string with path separator can escape correctly",
+            actual: () => url`http://api.example.com/users/${"a/b/🐙"}/`,
+            expected: "http://api.example.com/users/a/b/%F0%9F%90%99/",
         },
         {
             name: "path placeholder - array (empty)",
